@@ -1,7 +1,7 @@
 #include "main.h"
 
 int main() {
-    DBM *db = db_open_or_create("TEST");
+    /*DBM *db = db_open_or_create("TEST");
     db_set(db, "kluc", "wartosc");
     char *res;
     if((res = db_get_one(db, "klucz")) != NULL) {
@@ -26,5 +26,7 @@ int main() {
     }
     free(results);
     db_close(db);
+    */
+    interface_initialize();
     return 0;
 }
