@@ -27,6 +27,7 @@ int main() {
     free(results);
     db_close(db);
     */
+    db_open_or_create("EIS");
     interface_initialize();
     return 0;
 }

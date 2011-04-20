@@ -1,6 +1,7 @@
 #include "interface.h"
 
 void interface_initialize() {
+    db = db_open_or_create("EIS");
     WINDOW *main_win = initscr();
     clear();
     cbreak();
@@ -52,7 +53,7 @@ void __top_left_initialize() {
                 wmove(top_left, 7, x);
                 __top_right_search();
             }
-        } else if(opt == 'q') {
+        } else if(opt == 27) {
             break;
         }
         wrefresh(top_left);
@@ -109,11 +110,25 @@ void __top_right_add() {
 
 void __top_right_add_loop() {
     wmove(top_right, 4, 14);
+    char *arr[5];
+    int i;
+    for(i = 0; i < 5; ++i) {
+        arr[i] = malloc(sizeof(char*));
+        arr[i][0] = '\0';
+    }
     int ikses[] = {14, 14, 15, 14, 18};
     while(1) {
         int opt = wgetch(top_right);
         if(opt == 13) {
-            // potwierdzenie
+            // output will be printed in separate window below
+            mvwprintw(top_right, 14, 14, "ADDING... ");
+            if(db_set(db, arr[0], arr[1]/*this will be concat 1 - 4*/) == 0) {
+                wprintw(top_right, "DONE");
+            } else {
+                wprintw(top_right, "FAILED");
+            }
+            __top_right_add();
+            wmove(top_right, 4, 14);
         } else if(opt == KEY_UP) {
             int x, y;
             getyx(top_right, y, x);
@@ -127,16 +142,33 @@ void __top_right_add_loop() {
                 wmove(top_right, y + 1, ikses[y - 3]);
             }
         } else if(opt == KEY_LEFT) {
-            // turn left
+            int x, y;
+            getyx(top_right, y, x);
+            if(x > ikses[y - 4]) {
+                wmove(top_right, y, x - 1);
+            }
         } else if(opt == KEY_RIGHT) {
-            // turn right
+            int x, y;
+            getyx(top_right, y, x);
+            if(x < ikses[y - 4] + strlen(arr[y - 4])) {
+                wmove(top_right, y, x + 1);
+            }
         } else if(opt == 27) {
             break;
         } else { // jakies zabezpieczenie przed zjebanymi znakami?
             // save whole string somewhere and przewijac dzemorem!
+            int x, y;
+            getyx(top_right, y, x);
+            int size = strlen(arr[y - 4]);
+            arr[y - 4] = realloc(arr[y - 4], sizeof(char*) * (size + 2));
+            arr[y - 4][size] = opt;
+            arr[y - 4][size + 1] = '\0';
             wechochar(top_right, opt);
         }
         wrefresh(top_right);
+    } /* while(1) */
+    for(i = 0; i < 5; ++i) {
+        free(arr[i]);
     }
 }
 
@@ -144,10 +176,67 @@ void __top_right_search() {
     wclear(top_right);
     __top_right_initialize();
     mvwprintw(top_right, 1, 16, "SEARCH");
+    mvwprintw(top_right, 4, 8, "Single [X]");
+    mvwprintw(top_right, 5, 8, "Regexp [ ]");
+    mvwprintw(top_right, 7, 8, "Query: ");
+    int i;
+    for(i = 0; i < 17; ++i) {
+        wechochar(top_right, '_');
+    }
     wrefresh(top_right);
 }
 
 void __top_right_search_loop() {
+    wmove(top_right, 4, 16);
+    int query_type = 0;
+    while(1) {
+        int opt = wgetch(top_right);
+        if(opt == 13) {
+        } else if(opt == KEY_UP) {
+            int x, y;
+            getyx(top_right, y, x);
+            if(y == 7) {
+                wmove(top_right, 5, 16);
+            } else if(y > 4) {
+                wmove(top_right, y - 1, x);
+            }
+        } else if(opt == KEY_DOWN) {
+            int x, y;
+            getyx(top_right, y, x);
+            if(y == 5) {
+                wmove(top_right, 7, 15);
+            } else if(y == 4) {
+                wmove(top_right, 5, 16);
+            }
+        } else if(opt == KEY_LEFT) {
+        } else if(opt == KEY_RIGHT) {
+        } else if(opt == 32/*space*/) {
+            int x, y;
+            getyx(top_right, y, x);
+            if(y == 5 && query_type == 0) {
+                query_type = 1;
+                mvwprintw(top_right, 4, 16, " ");
+                mvwprintw(top_right, 5, 16, "X");
+                wmove(top_right, 5, 16);
+            } else if(y == 4 && query_type == 1) {
+                query_type = 0;
+                mvwprintw(top_right, 5, 16, " ");
+                mvwprintw(top_right, 4, 16, "X");
+                wmove(top_right, 4, 16);
+            } else if(y == 7) {
+                wechochar(top_right, opt)
+            }
+        } else if(opt == 27) {
+            break;
+        } else {
+            int x, y;
+            getyx(top_right, y, x);
+            if(y == 7) {
+                wechochar(top_right, opt);
+            }
+        }
+        wrefresh(top_right);
+    }
 }
 
 void __bottom_left_initialize() {

@@ -1,6 +1,10 @@
 #include <curses.h>
+#include <string.h>
+#include <stdlib.h>
+#include "database.h"
 
 WINDOW *top_left, *top_right, *bottom_left, *bottom_right;
+DBM *db;
 
 void interface_initialize();
 
