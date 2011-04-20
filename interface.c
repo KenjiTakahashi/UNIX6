@@ -21,6 +21,7 @@ void interface_initialize() {
     delwin(top_left);
     delwin(main_win);
     endwin();
+    db_close(db);
 }
 
 void __top_left_initialize() {
@@ -158,6 +159,16 @@ void __top_right_add_loop() {
             if(x < ikses[y - 4] + strlen(arr[y - 4])) {
                 wmove(top_right, y, x + 1);
             }
+        } else if(opt == KEY_BACKSPACE) {
+            int x, y;
+            getyx(top_right, y, x);
+            if(x > ikses[y - 4]) {
+                mvwdelch(top_right, y, x - 1);
+                mvwaddch(top_right, y, 31, '_');
+                mvwaddch(top_right, y, 38, ' ');
+                mvwaddch(top_right, y, 39, '│'); // think how it can be changed
+                wmove(top_right, y, x - 1);
+            }
         } else if(opt == 27) {
             break;
         } else { // jakies zabezpieczenie przed zjebanymi znakami?
@@ -199,6 +210,8 @@ void __top_right_search_loop() {
     while(1) {
         int opt = wgetch(top_right);
         if(opt == 13) {
+            // place debug strings below
+            __bottom_left_loop(query_type, query);
         } else if(opt == KEY_UP) {
             int x, y;
             getyx(top_right, y, x);
@@ -233,6 +246,16 @@ void __top_right_search_loop() {
             } else if(y == 7) {
                 wechochar(top_right, opt);
             }
+        } else if(opt == KEY_BACKSPACE) {
+            int x, y;
+            getyx(top_right, y, x);
+            if(y == 7 && x > 15) {
+                mvwdelch(top_right, y, x - 1);
+                mvwaddch(top_right, y, 31, '_');
+                mvwaddch(top_right, y, 38, ' ');
+                mvwaddch(top_right, y, 39, '│'); // think how it can be changed
+                wmove(top_right, y, x - 1);
+            }
         } else if(opt == 27) {
             break;
         } else {
@@ -257,6 +280,34 @@ void __bottom_left_initialize() {
     wmove(bottom_left, 2, 1);
     whline(bottom_left, 0, 38);
     wrefresh(bottom_left);
+}
+
+void __bottom_left_loop(int query_type, char *query) {
+    if(query_type == 0) {
+        char *result = db_get_one(db, query);
+        mvwprintw(bottom_left, 4, 1, "%s", result);
+    } else {
+        char **results;
+        int r_size = db_get_many(db, query, &results);
+        int i;
+        for(i = 0; i < r_size; ++i) {
+            mvwprintw(bottom_left, i + 4, 1, "%s", results[i]);
+        }
+        for(i = 0; i < r_size; ++i) {
+            free(results[i]);
+        }
+        free(results);
+    }
+    wrefresh(bottom_left);
+    while(1) {
+        int opt = wgetch(bottom_left);
+        if(opt == 13) {
+        } else if(opt == KEY_UP) {
+        } else if(opt == KEY_DOWN) {
+        } else if(opt == KEY_LEFT) {
+        } else if(opt == KEY_RIGHT) {
+        }
+    }
 }
 
 void __bottom_right_initialize() {

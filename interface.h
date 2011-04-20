@@ -18,5 +18,6 @@ void __top_right_search();
 void __top_right_search_loop();
 
 void __bottom_left_initialize();
+void __bottom_left_loop(int, char*);
 
 void __bottom_right_initialize();
