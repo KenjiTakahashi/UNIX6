@@ -10,8 +10,13 @@ void interface_initialize() {
     keypad(stdscr, TRUE);
     top_left = newwin(16, 40, 0, 0);
     top_right = newwin(16, 40, 0, 41);
+    bottom_left = newwin(16, 40, 16, 0);
+    bottom_right = newwin(16, 40, 16, 41);
+    __bottom_right_initialize();
+    __bottom_left_initialize();
     __top_right_initialize();
     __top_left_initialize();
+    delwin(bottom_left);
     delwin(top_right);
     delwin(top_left);
     delwin(main_win);
@@ -189,6 +194,8 @@ void __top_right_search() {
 void __top_right_search_loop() {
     wmove(top_right, 4, 16);
     int query_type = 0;
+    char *query = malloc(sizeof(char*));
+    query[0] = '\0';
     while(1) {
         int opt = wgetch(top_right);
         if(opt == 13) {
@@ -224,7 +231,7 @@ void __top_right_search_loop() {
                 mvwprintw(top_right, 4, 16, "X");
                 wmove(top_right, 4, 16);
             } else if(y == 7) {
-                wechochar(top_right, opt)
+                wechochar(top_right, opt);
             }
         } else if(opt == 27) {
             break;
@@ -232,6 +239,10 @@ void __top_right_search_loop() {
             int x, y;
             getyx(top_right, y, x);
             if(y == 7) {
+                int size = strlen(query);
+                query = realloc(query, sizeof(char*) * (size + 2));
+                query[size] = opt;
+                query[size + 1] = '\0';
                 wechochar(top_right, opt);
             }
         }
@@ -240,7 +251,19 @@ void __top_right_search_loop() {
 }
 
 void __bottom_left_initialize() {
+    keypad(bottom_left, TRUE);
+    box(bottom_left, 0, 0);
+    mvwprintw(bottom_left, 1, 16, "RESULTS");
+    wmove(bottom_left, 2, 1);
+    whline(bottom_left, 0, 38);
+    wrefresh(bottom_left);
 }
 
 void __bottom_right_initialize() {
+    keypad(bottom_right, TRUE);
+    box(bottom_right, 0, 0);
+    mvwprintw(bottom_right, 1, 17, "EDIT");
+    wmove(bottom_right, 2, 1);
+    whline(bottom_right, 0, 38);
+    wrefresh(bottom_right);
 }
