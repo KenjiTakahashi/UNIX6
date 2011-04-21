@@ -22,7 +22,7 @@ char *db_get_one(DBM *db, char *key) {
     datum dv = dbm_fetch(db, dk);
     return dv.dptr;
 };
-int db_get_many(DBM *db, char *pattern, char ***results) {
+int db_get_many(DBM *db, char *pattern, char ***keys, char ***results) {
     regex_t re;
     if(regcomp(&re, pattern, REG_EXTENDED) != 0) {
         return 0;
@@ -30,10 +30,14 @@ int db_get_many(DBM *db, char *pattern, char ***results) {
     regmatch_t res;
     datum dk;
     int i = 0;
+    *keys = malloc(1);
     *results = malloc(1);
     for(dk = dbm_firstkey(db); dk.dptr != NULL; dk = dbm_nextkey(db)) {
         datum dv = dbm_fetch(db, dk);
         if(regexec(&re, dk.dptr, (size_t)1, &res, 0) == 0) {
+            *keys = realloc(*keys, sizeof(char*) * (i + 1));
+            (*keys)[i] = malloc(sizeof(char*) * dk.dsize);
+            strncpy((*keys)[i], dk.dptr, dk.dsize);
             *results = realloc(*results, sizeof(char*) * (i + 1));
             (*results)[i] = malloc(sizeof(char*) * dv.dsize);
             strncpy((*results)[i], dv.dptr, dv.dsize);

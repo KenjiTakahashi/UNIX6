@@ -11,9 +11,9 @@
 #include <db.h>
 #endif
 
-DBM *db_open_or_create(char *name);
-void db_close(DBM *db);
-int db_set(DBM *db, char *key, char *value);
-char *db_get_one(DBM *db, char *key);
-int db_get_many(DBM *db, char *pattern, char ***results); /* for regexp search. */
-int db_remove(DBM *db, char *key);
+DBM *db_open_or_create(char*);
+void db_close(DBM*);
+int db_set(DBM*, char*, char*);
+char *db_get_one(DBM*, char*);
+int db_get_many(DBM*, char*, char***, char***); /* for regexp search. */
+int db_remove(DBM*, char*);

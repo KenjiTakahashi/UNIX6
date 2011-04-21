@@ -287,11 +287,12 @@ void __bottom_left_loop(int query_type, char *query) {
         char *result = db_get_one(db, query);
         mvwprintw(bottom_left, 4, 1, "%s", result);
     } else {
+        char **keys;
         char **results;
-        int r_size = db_get_many(db, query, &results);
+        int r_size = db_get_many(db, query, &keys, &results);
         int i;
         for(i = 0; i < r_size; ++i) {
-            mvwprintw(bottom_left, i + 4, 1, "%s", results[i]);
+            mvwprintw(bottom_left, i + 4, 1, "%s", keys[i]);
         }
         for(i = 0; i < r_size; ++i) {
             free(results[i]);
@@ -306,6 +307,8 @@ void __bottom_left_loop(int query_type, char *query) {
         } else if(opt == KEY_DOWN) {
         } else if(opt == KEY_LEFT) {
         } else if(opt == KEY_RIGHT) {
+        } else if(opt == 27) {
+            break;
         }
     }
 }
