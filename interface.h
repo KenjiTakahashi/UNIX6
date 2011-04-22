@@ -19,5 +19,6 @@ void __top_right_search_loop();
 
 void __bottom_left_initialize();
 void __bottom_left_loop(int, char*);
+void __bottom_left_print(WINDOW *, char **, int, int);
 
 void __bottom_right_initialize();

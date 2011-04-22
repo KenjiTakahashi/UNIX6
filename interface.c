@@ -283,34 +283,63 @@ void __bottom_left_initialize() {
 }
 
 void __bottom_left_loop(int query_type, char *query) {
+    WINDOW *pad = newpad(200, 40);
+    int position = 0;
+    int r_size = 1;
+    int highlight = 0;
+    char **keys;
+    char **results;
     if(query_type == 0) {
         char *result = db_get_one(db, query);
-        mvwprintw(bottom_left, 4, 1, "%s", result);
+        mvwprintw(pad, 0, 0, "%s", result);
     } else {
-        char **keys;
-        char **results;
-        int r_size = db_get_many(db, query, &keys, &results);
-        int i;
-        for(i = 0; i < r_size; ++i) {
-            mvwprintw(bottom_left, i + 4, 1, "%s", keys[i]);
-        }
-        for(i = 0; i < r_size; ++i) {
-            free(results[i]);
-        }
-        free(results);
+        r_size = db_get_many(db, query, &keys, &results);
+        __bottom_left_print(pad, keys, r_size, highlight);
+        //free keys and results!
     }
-    wrefresh(bottom_left);
+    prefresh(pad, position, 0, 20, 1, 30, 38);
     while(1) {
         int opt = wgetch(bottom_left);
         if(opt == 13) {
         } else if(opt == KEY_UP) {
+            int x, y;
+            getyx(pad, y, x);
+            if(y > 0) {
+                --highlight;
+                __bottom_left_print(pad, keys, r_size, highlight);
+                if(y == position) {
+                    --position;
+                }
+            }
         } else if(opt == KEY_DOWN) {
-        } else if(opt == KEY_LEFT) {
-        } else if(opt == KEY_RIGHT) {
+            int x, y;
+            getyx(pad, y, x);
+            if(y < r_size - 1) {
+                ++highlight;
+                __bottom_left_print(pad, keys, r_size, highlight);
+            }
+            if(y >= 10 && y < r_size - 1 && r_size > 11 && position < y - 9) {
+                ++position;
+            }
         } else if(opt == 27) {
             break;
         }
+        prefresh(pad, position, 0, 20, 1, 30, 38);
     }
+}
+
+void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
+    int i;
+    for(i = 0; i < size; ++i) {
+        if(i == highlight) {
+            wattron(pad, A_REVERSE);
+            mvwprintw(pad, i, 0, "%s", keys[i]);
+            wattroff(pad, A_REVERSE);
+        } else {
+            mvwprintw(pad, i, 0, "%s", keys[i]);
+        }
+    }
+    wmove(pad, highlight, 0);
 }
 
 void __bottom_right_initialize() {
