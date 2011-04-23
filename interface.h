@@ -1,4 +1,5 @@
 #include <curses.h>
+#include <form.h>
 #include <string.h>
 #include <stdlib.h>
 #include "database.h"
@@ -12,13 +13,13 @@ void __top_left_initialize();
 void __top_left_menu(int);
 
 void __top_right_initialize();
-void __top_right_add();
-void __top_right_add_loop();
+FORM *__top_right_add(FIELD*(*)[6]); /* we need FIELDs to be alive! */
+void __top_right_add_loop(FORM*);
 void __top_right_search();
 void __top_right_search_loop();
 
 void __bottom_left_initialize();
 void __bottom_left_loop(int, char*);
-void __bottom_left_print(WINDOW *, char **, int, int);
+void __bottom_left_print(WINDOW*, char**, int, int);
 
 void __bottom_right_initialize();

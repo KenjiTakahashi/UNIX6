@@ -1,5 +1,5 @@
 eis: database.o interface.o main.o
-	cc database.o interface.o main.o -ldb -lcurses -lm -o eis
+	cc database.o interface.o main.o -ldb -lform -lcurses -lm -o eis
 main.o: main.h main.c
 	cc -c main.c -g
 database.o: database.h database.c

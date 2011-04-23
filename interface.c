@@ -32,38 +32,41 @@ void __top_left_initialize() {
     whline(top_left, 0, 38);
     __top_left_menu(0);
     wmove(top_left, 4, 18);
-    __top_right_add();
-    while(1) {
-        int opt = wgetch(top_left);
-        if(opt == 13) {
-            int x, y;
-            getyx(top_left, y, x);
-            if(y == 4) {
-                __top_right_add_loop();
-            } else if(y == 7) {
-                __top_right_search_loop();
-            }
-        } else if(opt == KEY_UP) {
-            int x, y;
-            getyx(top_left, y, x);
-            if(y == 7) {
-                __top_left_menu(0);
-                wmove(top_left, 4, x);
-                __top_right_add();
-            }
-        } else if(opt == KEY_DOWN) {
-            int x, y;
-            getyx(top_left, y, x);
-            if(y == 4) {
-                __top_left_menu(1);
-                wmove(top_left, 7, x);
-                __top_right_search();
-            }
-        } else if(opt == 27) {
-            break;
+    // free the forms!
+    FIELD *field[6];
+    FORM *form = __top_right_add(&field);
+    form_driver(form, REQ_FIRST_FIELD);
+    int opt;
+    while((opt = wgetch(top_left)) != 27) {
+        int x, y;
+        getyx(top_left, y, x);
+        switch(opt) {
+            case 13:
+                if(y == 4) {
+                    __top_right_add_loop(form);
+                } else if(y == 7) {
+                    __top_right_search_loop();
+                }
+                break;
+            case KEY_UP:
+                if(y == 7) {
+                    __top_left_menu(0);
+                    wmove(top_left, 4, x);
+                    form = __top_right_add(&field);
+                }
+                break;
+            case KEY_DOWN:
+                if(y == 4) {
+                    __top_left_menu(1);
+                    wmove(top_left, 7, x);
+                    __top_right_search();
+                }
+                break;
+            default:
+                break;
         }
         wrefresh(top_left);
-    } /* while(1) */
+    } /* while() */
 }
 
 void __top_left_menu(int highlight) {
@@ -91,7 +94,7 @@ void __top_right_initialize() {
     wrefresh(top_right);
 }
 
-void __top_right_add() {
+FORM *__top_right_add(FIELD *(*field)[6]) {
     char *labels[] = {
         "Name: ",
         "Form: ",
@@ -99,93 +102,59 @@ void __top_right_add() {
         "Date: ",
         "Lecturer: "
     };
-    int sizes[] = {18, 18, 17, 18, 14};
     wclear(top_right);
     __top_right_initialize();
     mvwprintw(top_right, 1, 17, "ADD");
     int i;
     for(i = 0; i < 5; ++i) {
         mvwprintw(top_right, i + 4, 8, labels[i]);
-        int j;
-        for(j = 0; j < sizes[i]; ++j) {
-            wechochar(top_right, '_');
-        }
+        (*field)[i] = new_field(1, 14, i, 1, 0, 0);
+        set_field_back((*field)[i], A_UNDERLINE);
+        field_opts_off((*field)[i], O_AUTOSKIP);
     }
+    (*field)[5] = NULL;
+    FORM *form = new_form((*field));
+    set_form_win(form, top_right);
+    set_form_sub(form, derwin(top_right, 11, 15, 4, 17));
+    post_form(form);
     wrefresh(top_right);
+    return form;
 }
 
-void __top_right_add_loop() {
-    wmove(top_right, 4, 14);
-    char *arr[5];
-    int i;
-    for(i = 0; i < 5; ++i) {
-        arr[i] = malloc(sizeof(char*));
-        arr[i][0] = '\0';
-    }
-    int ikses[] = {14, 14, 15, 14, 18};
-    while(1) {
-        int opt = wgetch(top_right);
-        if(opt == 13) {
-            // output will be printed in separate window below
-            mvwprintw(top_right, 14, 14, "ADDING... ");
-            if(db_set(db, arr[0], arr[1]/*this will be concat 1 - 4*/) == 0) {
-                wprintw(top_right, "DONE");
-            } else {
-                wprintw(top_right, "FAILED");
-            }
-            __top_right_add();
-            wmove(top_right, 4, 14);
-        } else if(opt == KEY_UP) {
-            int x, y;
-            getyx(top_right, y, x);
-            if(y > 4) {
-                wmove(top_right, y - 1, ikses[y - 5]);
-            }
-        } else if(opt == KEY_DOWN) {
-            int x, y;
-            getyx(top_right, y, x);
-            if(y < 8) {
-                wmove(top_right, y + 1, ikses[y - 3]);
-            }
-        } else if(opt == KEY_LEFT) {
-            int x, y;
-            getyx(top_right, y, x);
-            if(x > ikses[y - 4]) {
-                wmove(top_right, y, x - 1);
-            }
-        } else if(opt == KEY_RIGHT) {
-            int x, y;
-            getyx(top_right, y, x);
-            if(x < ikses[y - 4] + strlen(arr[y - 4])) {
-                wmove(top_right, y, x + 1);
-            }
-        } else if(opt == KEY_BACKSPACE) {
-            int x, y;
-            getyx(top_right, y, x);
-            if(x > ikses[y - 4]) {
-                mvwdelch(top_right, y, x - 1);
-                mvwaddch(top_right, y, 31, '_');
-                mvwaddch(top_right, y, 38, ' ');
-                mvwaddch(top_right, y, 39, '│'); // think how it can be changed
-                wmove(top_right, y, x - 1);
-            }
-        } else if(opt == 27) {
-            break;
-        } else { // jakies zabezpieczenie przed zjebanymi znakami?
-            // save whole string somewhere and przewijac dzemorem!
-            int x, y;
-            getyx(top_right, y, x);
-            int size = strlen(arr[y - 4]);
-            arr[y - 4] = realloc(arr[y - 4], sizeof(char*) * (size + 2));
-            arr[y - 4][size] = opt;
-            arr[y - 4][size + 1] = '\0';
-            wechochar(top_right, opt);
+void __top_right_add_loop(FORM *form) {
+    form_driver(form, REQ_FIRST_FIELD);
+    int opt;
+    while((opt = wgetch(top_right)) != 27) {
+        switch(opt) {
+            case 13:
+                form_driver(form, REQ_CLR_FIELD);
+                // print output on status bar
+                break;
+            case KEY_UP:
+                form_driver(form, REQ_PREV_FIELD);
+                form_driver(form, REQ_END_LINE);
+                break;
+            case KEY_DOWN:
+                form_driver(form, REQ_NEXT_FIELD);
+                form_driver(form, REQ_END_LINE);
+                break;
+            default:
+                form_driver(form, opt);
+                break;
         }
+        //if(opt == 13) {
+        //    // output will be printed in separate window below
+        //    mvwprintw(top_right, 14, 14, "ADDING... ");
+        //    if(db_set(db, arr[0], arr[1]/*this will be concat 1 - 4*/) == 0) {
+        //        wprintw(top_right, "DONE");
+        //    } else {
+        //        wprintw(top_right, "FAILED");
+        //    }
+        //    __top_right_add();
+        //    wmove(top_right, 4, 14);
+        //}
         wrefresh(top_right);
-    } /* while(1) */
-    for(i = 0; i < 5; ++i) {
-        free(arr[i]);
-    }
+    } /* while() */
 }
 
 void __top_right_search() {
@@ -326,6 +295,7 @@ void __bottom_left_loop(int query_type, char *query) {
         }
         prefresh(pad, position, 0, 20, 1, 30, 38);
     }
+    delwin(pad);
 }
 
 void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
