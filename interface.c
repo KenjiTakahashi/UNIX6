@@ -129,13 +129,17 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
     int opt;
     while((opt = wgetch(top_right)) != 27) {
         int i;
-        char *res0, *res1;
+        char *res0, *res1, *res2, *res3, *res4;
         switch(opt) {
             case 13:
                 form_driver(form, REQ_NEXT_FIELD);
                 mvwprintw(status, 1, 1, "ADDING... ");
                 res0 = __util_remove_trailing_spaces(field_buffer(field[0], 0));
-                if(db_set(db, res0, res1/*this will be concat 1-4*/) == 0) {
+                res1 = __util_remove_trailing_spaces(field_buffer(field[1], 0));
+                res2 = __util_remove_trailing_spaces(field_buffer(field[2], 0));
+                res3 = __util_remove_trailing_spaces(field_buffer(field[3], 0));
+                res4 = __util_remove_trailing_spaces(field_buffer(field[4], 0));
+                if(db_set(db, res0, __util_concat(res1, res2, res3, res4)) == 0) {
                     wprintw(status, "DONE");
                     for(i = 0; i < 5; ++i) {
                         form_driver(form, REQ_NEXT_FIELD);
@@ -146,6 +150,11 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
                 }
                 wrefresh(status);
                 form_driver(form, REQ_FIRST_FIELD);
+                free(res0);
+                free(res1);
+                free(res2);
+                free(res3);
+                free(res4);
                 break;
             case KEY_UP:
                 form_driver(form, REQ_PREV_FIELD);
@@ -161,7 +170,7 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
             case KEY_RIGHT:
                 form_driver(form, REQ_RIGHT_CHAR);
                 break;
-            case KEY_BACKSPACE: // test if buffer is empty
+            case KEY_BACKSPACE:
                 form_driver(form, REQ_DEL_PREV);
                 break;
             default:
@@ -279,15 +288,18 @@ void __bottom_left_loop(int query_type, char *query) {
     char **results;
     if(query_type == 0) {
         char *result = db_get_one(db, query);
-        mvwprintw(pad, 0, 0, "%s", result);
+        wattron(pad, A_REVERSE);
+        mvwprintw(pad, 0, 0, "%s", query);
+        wattroff(pad, A_REVERSE);
     } else {
         r_size = db_get_many(db, query, &keys, &results);
         __bottom_left_print(pad, keys, r_size, highlight);
         breaker = 1;
     }
-    prefresh(pad, pos, 0, 20, 1, 30, 38);
     wprintw(status, "FOUND %d RESULT(S)... ", r_size);
     wrefresh(status);
+    wmove(pad, 0, 0);
+    prefresh(pad, pos, 0, 20, 1, 30, 38);
     int opt;
     while((opt = wgetch(bottom_left)) != 27) {
         int x, y;
