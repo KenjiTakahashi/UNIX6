@@ -5,3 +5,4 @@ char *__util_remove_trailing_spaces(char*);
 
 char *__util_concat(char*, char*, char*, char*);
 char **__util_explode(char*);
+void __util_free_exploded(char**);

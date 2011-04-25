@@ -280,65 +280,87 @@ void __bottom_left_initialize() {
 
 void __bottom_left_loop(int query_type, char *query) {
     WINDOW *pad = newpad(200, 40);
-    int breaker = 0;
     int pos = 0;
-    int r_size = 1;
+    int r_size = 0;
     int highlight = 0;
     char **keys;
     char **results;
     if(query_type == 0) {
-        char *result = db_get_one(db, query);
-        wattron(pad, A_REVERSE);
-        mvwprintw(pad, 0, 0, "%s", query);
-        wattroff(pad, A_REVERSE);
+        results = malloc(sizeof(char*));
+        results[0] = db_get_one(db, query);
+        if(results[0] != NULL) {
+            r_size = 1;
+            keys = malloc(sizeof(char*));
+            keys[0] = malloc(sizeof(char) * (strlen(query) + 2));
+            strncpy(keys[0], query, strlen(query) + 1);
+            wattron(pad, A_REVERSE);
+            mvwprintw(pad, 0, 0, keys[0]);
+            wattroff(pad, A_REVERSE);
+        }
     } else {
         r_size = db_get_many(db, query, &keys, &results);
         __bottom_left_print(pad, keys, r_size, highlight);
-        breaker = 1;
     }
-    wprintw(status, "FOUND %d RESULT(S)... ", r_size);
-    wrefresh(status);
-    wmove(pad, 0, 0);
-    prefresh(pad, pos, 0, 20, 1, 30, 38);
-    int opt;
-    while((opt = wgetch(bottom_left)) != 27) {
-        int x, y;
-        getyx(pad, y, x);
-        switch(opt) {
-            case 13:
-                break;
-            case KEY_UP:
-                if(y > 0) {
-                    --highlight;
-                    __bottom_left_print(pad, keys, r_size, highlight);
-                    if(y == pos) {
-                        --pos;
-                    }
-                }
-                break;
-            case KEY_DOWN:
-                if(y < r_size - 1) {
-                    ++highlight;
-                    __bottom_left_print(pad, keys, r_size, highlight);
-                }
-                if(y >= 10 && y < r_size - 1 && r_size > 11 && pos < y - 9) {
-                    ++pos;
-                }
-                break;
-            default:
-                break;
-        }
+    if(r_size != 0) {
+        wprintw(status, "FOUND %d RESULT(S)... ", r_size);
+        FIELD *field[6];
+        FORM *form = __bottom_right_print(&field);
+        char **data = __util_explode(results[0]);
+        __bottom_right_set_values(keys[0], data, field);
+        wmove(pad, 0, 0);
         prefresh(pad, pos, 0, 20, 1, 30, 38);
-    }
-    if(r_size != 0 && breaker == 1) {
+        int opt;
+        while((opt = wgetch(bottom_left)) != 27) {
+            int x, y;
+            getyx(pad, y, x);
+            switch(opt) {
+                case 13:
+                    __bottom_right_loop(form, field);
+                    break;
+                case KEY_UP:
+                    if(y > 0) {
+                        --highlight;
+                        __bottom_left_print(pad, keys, r_size, highlight);
+                        __util_free_exploded(data);
+                        data = __util_explode(results[highlight]);
+                        __bottom_right_set_values(keys[highlight], data, field);
+                        if(y == pos) {
+                            --pos;
+                        }
+                    }
+                    break;
+                case KEY_DOWN:
+                    if(y < r_size - 1) {
+                        ++highlight;
+                        __bottom_left_print(pad, keys, r_size, highlight);
+                        __util_free_exploded(data);
+                        data = __util_explode(results[highlight]);
+                        __bottom_right_set_values(keys[highlight], data, field);
+                        if(y >= 10 && r_size > 11 && pos < y - 9) {
+                            ++pos;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            prefresh(pad, pos, 0, 20, 1, 30, 38);
+        }
         int i;
         for(i = 0; i < r_size; ++i) {
             free(keys[i]);
-            free(results[i]);
+            if(query_type == 1) {
+                free(results[i]);
+            }
         }
         free(keys);
         free(results);
+        __free_form(form, field, 5);
+        __util_free_exploded(data);
+    } else {
+        wprintw(status, "NO RESULTS FOUND... ");
     }
+    wrefresh(status);
     delwin(pad);
 }
 
@@ -362,6 +384,69 @@ void __bottom_right_initialize() {
     mvwprintw(bottom_right, 1, 17, "EDIT");
     wmove(bottom_right, 2, 1);
     whline(bottom_right, 0, 38);
+    wrefresh(bottom_right);
+}
+
+void __bottom_right_loop(FORM *form, FIELD *field[6]) {
+    form_driver(form, REQ_FIRST_FIELD);
+    int opt;
+    while((opt = wgetch(bottom_right)) != 27) {
+        switch(opt) {
+            case 13:
+                break;
+            case KEY_UP:
+                form_driver(form, REQ_PREV_FIELD);
+                break;
+            case KEY_DOWN:
+                form_driver(form, REQ_NEXT_FIELD);
+                break;
+            case KEY_LEFT:
+                form_driver(form, REQ_LEFT_CHAR);
+                break;
+            case KEY_RIGHT:
+                form_driver(form, REQ_RIGHT_CHAR);
+                break;
+            case KEY_BACKSPACE:
+                form_driver(form, REQ_DEL_PREV);
+                break;
+            default:
+                form_driver(form, opt);
+                break;
+        }
+    }
+    wrefresh(bottom_right);
+}
+
+FORM *__bottom_right_print(FIELD *(*field)[6]) {
+    char *labels[] = {
+        "Name: ",
+        "Form: ",
+        "Grade: ",
+        "Date: ",
+        "Lecturer: "
+    };
+    int i;
+    for(i = 0; i < 5; ++i) {
+        mvwprintw(bottom_right, i + 4, 8, labels[i]);
+        (*field)[i] = new_field(1, 14, i, 1, 0, 0);
+        set_field_back((*field)[i], A_UNDERLINE);
+        field_opts_off((*field)[i], O_AUTOSKIP);
+    }
+    (*field)[5] = NULL;
+    FORM *form = new_form(*field);
+    set_form_win(form, bottom_right);
+    set_form_sub(form, derwin(bottom_right, 11, 15, 4, 17));
+    post_form(form);
+    wrefresh(bottom_right);
+    return form;
+}
+
+void __bottom_right_set_values(char *key, char **data, FIELD *field[6]) {
+    set_field_buffer(field[0], 0, key);
+    int i;
+    for(i = 0; i < 4; ++i) {
+        set_field_buffer(field[i + 1], 0, data[i]);
+    }
     wrefresh(bottom_right);
 }
 

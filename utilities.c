@@ -11,7 +11,7 @@ char *__util_remove_trailing_spaces(char *string) {
             --real_length;
         }
     }
-    char *result = malloc(sizeof(char) * real_length);
+    char *result = malloc(sizeof(char) * (real_length + 1));
     strncpy(result, string, real_length);
     result[real_length] = '\0';
     return result;
@@ -34,20 +34,45 @@ char *__util_concat(char *name, char *form, char *grade, char *lecturer) {
     return result;
 }
 
-char **__util_explode(char* string) {
-    char **result = malloc(sizeof(char*) * 4);
+char **__util_explode(char* orig) {
+    int size = strlen(orig);
+    char *string = malloc(sizeof(char) * size);
+    strncpy(string, orig, size);
+    string[size] = '\0';
+    char **result = malloc(sizeof(char*) * 5);
     char *partial = strtok(string, ";");
-    int size = strlen(partial);
-    result[0] = malloc(sizeof(char) * size);
-    result[0][size] = '\0';
-    strncpy(result[0], partial, size);
     int i;
-    for(i = 1; i < 4; ++i) {
-        partial = strtok('\0', ";");
+    if(partial != NULL) {
         size = strlen(partial);
-        result[i] = malloc(sizeof(char) * size);
-        result[i][size] = '\0';
-        strncpy(result[i], partial, size);
+        result[0] = malloc(sizeof(char) * (size + 1));
+        strncpy(result[0], partial, size);
+        result[0][size] = '\0';
+        for(i = 1; i < 4; ++i) {
+            partial = strtok('\0', ";");
+            if(partial != NULL) {
+                size = strlen(partial);
+            } else {
+                size = 0;
+            }
+            result[i] = malloc(sizeof(char) * (size + 1));
+            if(partial != NULL) {
+                strncpy(result[i], partial, size);
+            }
+            result[i][size] = '\0';
+        }
+    } else {
+        for(i = 0; i < 4; ++i) {
+            result[i] = malloc(sizeof(char));
+            result[i][0] = '\0';
+        }
     }
     return result;
+}
+
+void __util_free_exploded(char **data) {
+    int i;
+    for(i = 0; i < 4; ++i) {
+        free(data[i]);
+    }
+    free(data);
 }

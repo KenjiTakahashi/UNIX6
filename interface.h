@@ -24,6 +24,9 @@ void __bottom_left_loop(int, char*);
 void __bottom_left_print(WINDOW*, char**, int, int);
 
 void __bottom_right_initialize();
+void __bottom_right_loop(FORM*, FIELD*[6]);
+FORM *__bottom_right_print(FIELD*(*)[6]);
+void __bottom_right_set_values(char*, char**, FIELD*[6]);
 
 void __status_initialize();
 
