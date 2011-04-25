@@ -350,6 +350,17 @@ void __bottom_left_loop(int query_type, char *query) {
                         }
                     }
                     break;
+                case 'R':
+                    wprintw(status, "   REMOVING... ");
+                    if(db_remove(db, keys[highlight]) == 0) {
+                        wdeleteln(pad);
+                        wprintw(status, "DONE");
+                        //fetch new results
+                    } else {
+                        wprintw(status, "FAILED");
+                    }
+                    wrefresh(status);
+                    break;
                 default:
                     break;
             }
