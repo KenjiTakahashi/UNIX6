@@ -12,12 +12,17 @@ void interface_initialize() {
     top_right = newwin(16, 40, 0, 41);
     bottom_left = newwin(16, 40, 16, 0);
     bottom_right = newwin(16, 40, 16, 41);
-    status = newwin(3, 81, 32, 0);
+    help = newwin(7, 81, 32, 0);
+    status = newwin(3, 81, 39, 0);
     __status_initialize();
+    __help_initialize();
     __bottom_right_initialize();
     __bottom_left_initialize();
     __top_right_initialize();
     __top_left_initialize();
+    delwin(status);
+    delwin(help);
+    delwin(bottom_right);
     delwin(bottom_left);
     delwin(top_right);
     delwin(top_left);
@@ -484,6 +489,16 @@ void __status_initialize() {
     wclear(status);
     box(status, 0, 0);
     wrefresh(status);
+}
+
+void __help_initialize() {
+    box(help, 0, 0);
+    mvwprintw(help, 1, 1, "USAGE:");
+    mvwprintw(help, 2, 1, "ESC - Move to previous window (in MAIN: Exit)");
+    mvwprintw(help, 3, 1, "Enter - Confirm (unstoppable!)");
+    mvwprintw(help, 4, 1, "Arrow keys - Natural things for each window");
+    mvwprintw(help, 5, 1, "R - (in RESULTS: Remove selected)");
+    wrefresh(help);
 }
 
 void __free_form(FORM *form, FIELD *field[6], int size) {

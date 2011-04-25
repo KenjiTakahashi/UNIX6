@@ -5,7 +5,7 @@
 #include "database.h"
 #include "utilities.h"
 
-WINDOW *top_left, *top_right, *bottom_left, *bottom_right, *status;
+WINDOW *top_left, *top_right, *bottom_left, *bottom_right, *status, *help;
 DBM *db;
 
 void interface_initialize();
@@ -29,5 +29,7 @@ FORM *__bottom_right_print(FIELD*(*)[6]);
 void __bottom_right_set_values(char*, char**, FIELD*[6]);
 
 void __status_initialize();
+
+void __help_initialize();
 
 void __free_form(FORM*, FIELD*[6], int);
