@@ -129,9 +129,10 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
     int opt;
     while((opt = wgetch(top_right)) != 27) {
         int i;
-        char *res0, *res1, *res2, *res3, *res4;
+        char *res, *res0, *res1, *res2, *res3, *res4;
         switch(opt) {
             case 13:
+                __status_initialize();
                 form_driver(form, REQ_NEXT_FIELD);
                 mvwprintw(status, 1, 1, "ADDING... ");
                 res0 = __util_remove_trailing_spaces(field_buffer(field[0], 0));
@@ -139,7 +140,8 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
                 res2 = __util_remove_trailing_spaces(field_buffer(field[2], 0));
                 res3 = __util_remove_trailing_spaces(field_buffer(field[3], 0));
                 res4 = __util_remove_trailing_spaces(field_buffer(field[4], 0));
-                if(db_set(db, res0, __util_concat(res1, res2, res3, res4)) == 0) {
+                res = __util_concat(res1, res2, res3, res4);
+                if(db_set(db, res0, res) == 0) {
                     wprintw(status, "DONE");
                     for(i = 0; i < 5; ++i) {
                         form_driver(form, REQ_NEXT_FIELD);
@@ -210,6 +212,7 @@ void __top_right_search_loop(FORM *form, FIELD *field[6]) {
         char *quer;
         switch(opt) {
             case 13:
+                __status_initialize();
                 form_driver(form, REQ_NEXT_FIELD);
                 mvwprintw(status, 1, 1, "SEARCHING... ");
                 wrefresh(status);
@@ -302,7 +305,8 @@ void __bottom_left_loop(int query_type, char *query) {
         __bottom_left_print(pad, keys, r_size, highlight);
     }
     if(r_size != 0) {
-        wprintw(status, "FOUND %d RESULT(S)... ", r_size);
+        wprintw(status, "FOUND %d RESULT(S)", r_size);
+        wrefresh(status);
         FIELD *field[6];
         FORM *form = __bottom_right_print(&field);
         char **data = __util_explode(results[0]);
@@ -315,7 +319,7 @@ void __bottom_left_loop(int query_type, char *query) {
             getyx(pad, y, x);
             switch(opt) {
                 case 13:
-                    __bottom_right_loop(form, field);
+                    __bottom_right_loop(form, field, keys[0]);
                     break;
                 case KEY_UP:
                     if(y > 0) {
@@ -358,7 +362,7 @@ void __bottom_left_loop(int query_type, char *query) {
         __free_form(form, field, 5);
         __util_free_exploded(data);
     } else {
-        wprintw(status, "NO RESULTS FOUND... ");
+        wprintw(status, "NO RESULTS FOUND");
     }
     wrefresh(status);
     delwin(pad);
@@ -369,10 +373,10 @@ void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
     for(i = 0; i < size; ++i) {
         if(i == highlight) {
             wattron(pad, A_REVERSE);
-            mvwprintw(pad, i, 0, "%s", keys[i]);
+            mvwprintw(pad, i, 0, keys[i]);
             wattroff(pad, A_REVERSE);
         } else {
-            mvwprintw(pad, i, 0, "%s", keys[i]);
+            mvwprintw(pad, i, 0, keys[i]);
         }
     }
     wmove(pad, highlight, 0);
@@ -387,12 +391,38 @@ void __bottom_right_initialize() {
     wrefresh(bottom_right);
 }
 
-void __bottom_right_loop(FORM *form, FIELD *field[6]) {
+void __bottom_right_loop(FORM *form, FIELD *field[6], char *key) {
     form_driver(form, REQ_FIRST_FIELD);
+    form_driver(form, REQ_END_LINE);
     int opt;
     while((opt = wgetch(bottom_right)) != 27) {
+        char *res, *res0, *res1, *res2, *res3, *res4;
         switch(opt) {
             case 13:
+                __status_initialize();
+                form_driver(form, REQ_NEXT_FIELD);
+                mvwprintw(status, 1, 1, "EDITING... ");
+                if(db_remove(db, key) == 0) {
+                    res0 = __util_remove_trailing_spaces(
+                            field_buffer(field[0], 0));
+                    res1 = __util_remove_trailing_spaces(
+                            field_buffer(field[1], 0));
+                    res2 = __util_remove_trailing_spaces(
+                            field_buffer(field[2], 0));
+                    res3 = __util_remove_trailing_spaces(
+                            field_buffer(field[3], 0));
+                    res4 = __util_remove_trailing_spaces(
+                            field_buffer(field[4], 0));
+                    res = __util_concat(res1, res2, res3, res4);
+                    if(db_set(db, res0, res) == 0) {
+                        wprintw(status, "DONE");
+                    } else {
+                        wprintw(status, "FAILED");
+                    }
+                } else {
+                    wprintw(status, "FAILED");
+                }
+                wrefresh(status);
                 break;
             case KEY_UP:
                 form_driver(form, REQ_PREV_FIELD);
@@ -451,6 +481,7 @@ void __bottom_right_set_values(char *key, char **data, FIELD *field[6]) {
 }
 
 void __status_initialize() {
+    wclear(status);
     box(status, 0, 0);
     wrefresh(status);
 }
