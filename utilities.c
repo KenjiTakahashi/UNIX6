@@ -23,8 +23,9 @@ char *__util_concat(char *name, char *form, char *grade, char *lecturer) {
     int g_size = strlen(grade);
     int l_size = strlen(lecturer);
     char *result = malloc(sizeof(char) *
-            (n_size + f_size + g_size + l_size + 3));
-    strncpy(result, name, n_size);
+            (n_size + f_size + g_size + l_size + 4));
+    result[0] = '\0';
+    strncat(result, name, n_size);
     strncat(result, ";", 1);
     strncat(result, form, f_size);
     strncat(result, ";", 1);
@@ -36,7 +37,7 @@ char *__util_concat(char *name, char *form, char *grade, char *lecturer) {
 
 char **__util_explode(char* orig) {
     int size = strlen(orig);
-    char *string = malloc(sizeof(char) * size);
+    char *string = malloc(sizeof(char) * (size + 1));
     strncpy(string, orig, size);
     string[size] = '\0';
     char **result = malloc(sizeof(char*) * 5);

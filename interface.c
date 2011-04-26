@@ -289,24 +289,15 @@ void __bottom_left_initialize() {
 void __bottom_left_loop(int query_type, char *query) {
     WINDOW *pad = newpad(200, 40);
     int pos = 0;
-    int r_size = 0;
     int highlight = 0;
     char **keys;
     char **results;
+    int r_size = __bottom_left_update_results(query_type, query, &keys, &results);
     if(query_type == 0) {
-        results = malloc(sizeof(char*));
-        results[0] = db_get_one(db, query);
-        if(results[0] != NULL) {
-            r_size = 1;
-            keys = malloc(sizeof(char*));
-            keys[0] = malloc(sizeof(char) * (strlen(query) + 2));
-            strncpy(keys[0], query, strlen(query) + 1);
-            wattron(pad, A_REVERSE);
-            mvwprintw(pad, 0, 0, keys[0]);
-            wattroff(pad, A_REVERSE);
-        }
+        wattron(pad, A_REVERSE);
+        mvwprintw(pad, 0, 0, keys[0]);
+        wattroff(pad, A_REVERSE);
     } else {
-        r_size = db_get_many(db, query, &keys, &results);
         __bottom_left_print(pad, keys, r_size, highlight);
     }
     if(r_size != 0) {
@@ -355,7 +346,10 @@ void __bottom_left_loop(int query_type, char *query) {
                     if(db_remove(db, keys[highlight]) == 0) {
                         wdeleteln(pad);
                         wprintw(status, "DONE");
-                        //fetch new results
+                        __bottom_left_free_results(query_type,
+                                r_size, keys, results);
+                        r_size = __bottom_left_update_results(query_type,
+                                query, &keys, &results);
                     } else {
                         wprintw(status, "FAILED");
                     }
@@ -366,15 +360,7 @@ void __bottom_left_loop(int query_type, char *query) {
             }
             prefresh(pad, pos, 0, 20, 1, 30, 38);
         }
-        int i;
-        for(i = 0; i < r_size; ++i) {
-            free(keys[i]);
-            if(query_type == 1) {
-                free(results[i]);
-            }
-        }
-        free(keys);
-        free(results);
+        __bottom_left_free_results(query_type, r_size, keys, results);
         __free_form(form, field, 5);
         __util_free_exploded(data);
     } else {
@@ -396,6 +382,35 @@ void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
         }
     }
     wmove(pad, highlight, 0);
+}
+
+int __bottom_left_update_results(int query_type, char *query, char ***keys, char ***results) {
+    int r_size = 0;
+    if(query_type == 0) {
+        *results = malloc(sizeof(char*));
+        (*results)[0] = db_get_one(db, query);
+        if((*results)[0] != NULL) {
+            r_size = 1;
+            *keys = malloc(sizeof(char*));
+            (*keys)[0] = malloc(sizeof(char) * (strlen(query) + 2));
+            strncpy((*keys)[0], query, strlen(query) + 1);
+        }
+    } else {
+        r_size = db_get_many(db, query, keys, results);
+    }
+    return r_size;
+}
+
+void __bottom_left_free_results(int query_type, int r_size, char **keys, char **results) {
+    int i;
+    for(i = 0; i < r_size; ++i) {
+        free(keys[i]);
+        if(query_type == 1) {
+            free(results[i]);
+        }
+    }
+    free(keys);
+    free(results);
 }
 
 void __bottom_right_initialize() {

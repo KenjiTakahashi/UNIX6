@@ -22,6 +22,8 @@ void __top_right_search_loop(FORM*, FIELD*[6]);
 void __bottom_left_initialize();
 void __bottom_left_loop(int, char*);
 void __bottom_left_print(WINDOW*, char**, int, int);
+int __bottom_left_update_results(int, char*, char***, char***);
+void __bottom_left_free_results(int, int, char**, char**);
 
 void __bottom_right_initialize();
 void __bottom_right_loop(FORM*, FIELD*[6], char*);
