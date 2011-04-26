@@ -27,6 +27,7 @@ void interface_initialize() {
     delwin(top_right);
     delwin(top_left);
     delwin(main_win);
+    delwin(stdscr);
     endwin();
     db_close(db);
 }
@@ -39,6 +40,7 @@ void __top_left_initialize() {
     whline(top_left, 0, 38);
     __top_left_menu(0);
     wmove(top_left, 4, 18);
+    int f_size = 5;
     FIELD *field[6];
     FORM *form = __top_right_add(&field);
     form_driver(form, REQ_FIRST_FIELD);
@@ -58,16 +60,18 @@ void __top_left_initialize() {
                 if(y == 7) {
                     __top_left_menu(0);
                     wmove(top_left, 4, x);
-                    __free_form(form, field, 1);
+                    __free_form(form, field, f_size);
                     form = __top_right_add(&field);
+                    f_size = 5;
                 }
                 break;
             case KEY_DOWN:
                 if(y == 4) {
                     __top_left_menu(1);
                     wmove(top_left, 7, x);
-                    __free_form(form, field, 5);
+                    __free_form(form, field, f_size);
                     form = __top_right_search(&field);
+                    f_size = 1;
                 }
                 break;
             default:
@@ -75,6 +79,7 @@ void __top_left_initialize() {
         }
         wrefresh(top_left);
     } /* while() */
+    __free_form(form, field, f_size);
 }
 
 void __top_left_menu(int highlight) {
