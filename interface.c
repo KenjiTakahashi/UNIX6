@@ -116,7 +116,7 @@ FORM *__top_right_add(FIELD *(*field)[6]) {
     int i;
     for(i = 0; i < 5; ++i) {
         mvwprintw(top_right, i + 4, 8, labels[i]);
-        (*field)[i] = new_field(1, 14, i, 1, 0, 0);
+        (*field)[i] = new_field(1, 14, i, 1, 200, 0);
         set_field_back((*field)[i], A_UNDERLINE);
         field_opts_off((*field)[i], O_AUTOSKIP);
     }
@@ -172,10 +172,10 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
                 form_driver(form, REQ_END_LINE);
                 break;
             case KEY_LEFT:
-                form_driver(form, REQ_LEFT_CHAR);
+                form_driver(form, REQ_PREV_CHAR);
                 break;
             case KEY_RIGHT:
-                form_driver(form, REQ_RIGHT_CHAR);
+                form_driver(form, REQ_NEXT_CHAR);
                 break;
             case KEY_BACKSPACE:
                 form_driver(form, REQ_DEL_PREV);
@@ -195,7 +195,7 @@ FORM *__top_right_search(FIELD *(*field)[6]) {
     mvwprintw(top_right, 4, 8, "Single [X]");
     mvwprintw(top_right, 5, 8, "Regexp [ ]");
     mvwprintw(top_right, 7, 8, "Query: ");
-    (*field)[0] = new_field(1, 18, 0, 0, 0, 0);
+    (*field)[0] = new_field(1, 18, 0, 0, 200, 0);
     set_field_back((*field)[0], A_UNDERLINE);
     field_opts_off((*field)[0], O_AUTOSKIP);
     (*field)[1] = NULL;
@@ -243,12 +243,12 @@ void __top_right_search_loop(FORM *form, FIELD *field[6]) {
                 break;
             case KEY_LEFT:
                 if(y == 7) {
-                    form_driver(form, REQ_LEFT_CHAR);
+                    form_driver(form, REQ_PREV_CHAR);
                 }
                 break;
             case KEY_RIGHT:
                 if(y == 7) {
-                    form_driver(form, REQ_RIGHT_CHAR);
+                    form_driver(form, REQ_NEXT_CHAR);
                 }
                 break;
             case KEY_BACKSPACE:
@@ -384,7 +384,8 @@ void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
     wmove(pad, highlight, 0);
 }
 
-int __bottom_left_update_results(int query_type, char *query, char ***keys, char ***results) {
+int __bottom_left_update_results(int query_type,
+        char *query, char ***keys, char ***results) {
     int r_size = 0;
     if(query_type == 0) {
         *results = malloc(sizeof(char*));
@@ -401,7 +402,8 @@ int __bottom_left_update_results(int query_type, char *query, char ***keys, char
     return r_size;
 }
 
-void __bottom_left_free_results(int query_type, int r_size, char **keys, char **results) {
+void __bottom_left_free_results(int query_type,
+        int r_size, char **keys, char **results) {
     int i;
     for(i = 0; i < r_size; ++i) {
         free(keys[i]);
@@ -462,10 +464,10 @@ void __bottom_right_loop(FORM *form, FIELD *field[6], char *key) {
                 form_driver(form, REQ_NEXT_FIELD);
                 break;
             case KEY_LEFT:
-                form_driver(form, REQ_LEFT_CHAR);
+                form_driver(form, REQ_PREV_CHAR);
                 break;
             case KEY_RIGHT:
-                form_driver(form, REQ_RIGHT_CHAR);
+                form_driver(form, REQ_NEXT_CHAR);
                 break;
             case KEY_BACKSPACE:
                 form_driver(form, REQ_DEL_PREV);
@@ -489,7 +491,7 @@ FORM *__bottom_right_print(FIELD *(*field)[6]) {
     int i;
     for(i = 0; i < 5; ++i) {
         mvwprintw(bottom_right, i + 4, 8, labels[i]);
-        (*field)[i] = new_field(1, 14, i, 1, 0, 0);
+        (*field)[i] = new_field(1, 14, i, 1, 200, 0);
         set_field_back((*field)[i], A_UNDERLINE);
         field_opts_off((*field)[i], O_AUTOSKIP);
     }
