@@ -13,13 +13,20 @@ int db_set(DBM *db, char *key, char *value) {
     datum dv;
     dv.dptr = value;
     dv.dsize = strlen(value) + 1;
-    return dbm_store(db, dk, dv, DBM_INSERT);
+    int pag = dbm_pagfno(db);
+    lockf(pag, F_LOCK, 0);
+    int result = dbm_store(db, dk, dv, DBM_INSERT);
+    lockf(pag, F_ULOCK, 0);
+    return result;
 };
 char *db_get_one(DBM *db, char *key) {
     datum dk;
     dk.dptr = key;
     dk.dsize = strlen(key) + 1;
+    int pag = dbm_pagfno(db);
+    lockf(pag, F_LOCK, 0);
     datum dv = dbm_fetch(db, dk);
+    lockf(pag, F_ULOCK, 0);
     return dv.dptr;
 };
 int db_get_many(DBM *db, char *pattern, char ***keys, char ***results) {
@@ -32,6 +39,8 @@ int db_get_many(DBM *db, char *pattern, char ***keys, char ***results) {
     int i = 0;
     *keys = malloc(1);
     *results = malloc(1);
+    int pag = dbm_pagfno(db);
+    lockf(pag, F_LOCK, 0);
     for(dk = dbm_firstkey(db); dk.dptr != NULL; dk = dbm_nextkey(db)) {
         datum dv = dbm_fetch(db, dk);
         if(regexec(&re, dk.dptr, (size_t)1, &res, 0) == 0) {
@@ -44,6 +53,7 @@ int db_get_many(DBM *db, char *pattern, char ***keys, char ***results) {
             i++;
         }
     }
+    lockf(pag, F_ULOCK, 0);
     regfree(&re);
     return i;
 };
@@ -51,5 +61,9 @@ int db_remove(DBM *db, char *key) {
     datum dk;
     dk.dptr = key;
     dk.dsize = strlen(key) + 1;
-    return dbm_delete(db, dk);
+    int pag = dbm_pagfno(db);
+    lockf(pag, F_LOCK, 0);
+    int result = dbm_delete(db, dk);
+    lockf(pag, F_ULOCK, 0);
+    return result;
 };

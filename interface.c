@@ -145,6 +145,7 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
                 __status_initialize();
                 form_driver(form, REQ_NEXT_FIELD);
                 mvwprintw(status, 1, 1, "ADDING... ");
+                wrefresh(status);
                 res0 = __util_remove_trailing_spaces(field_buffer(field[0], 0));
                 res1 = __util_remove_trailing_spaces(field_buffer(field[1], 0));
                 res2 = __util_remove_trailing_spaces(field_buffer(field[2], 0));
@@ -440,6 +441,7 @@ void __bottom_right_loop(FORM *form, FIELD *field[6], char *key) {
                 __status_initialize();
                 form_driver(form, REQ_NEXT_FIELD);
                 mvwprintw(status, 1, 1, "EDITING... ");
+                wrefresh(status);
                 if(db_remove(db, key) == 0) {
                     res0 = __util_remove_trailing_spaces(
                             field_buffer(field[0], 0));

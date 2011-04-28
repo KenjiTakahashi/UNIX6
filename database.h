@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <regex.h>
 #ifndef __linux__
 #include <ndbm.h>
