@@ -13,7 +13,7 @@ int db_set(DBM *db, char *key, char *value) {
     datum dv;
     dv.dptr = value;
     dv.dsize = strlen(value) + 1;
-    int pag = dbm_pagfno(db);
+    int pag = dbm_dirfno(db);
     lockf(pag, F_LOCK, 0);
     int result = dbm_store(db, dk, dv, DBM_INSERT);
     lockf(pag, F_ULOCK, 0);
@@ -23,7 +23,7 @@ char *db_get_one(DBM *db, char *key) {
     datum dk;
     dk.dptr = key;
     dk.dsize = strlen(key) + 1;
-    int pag = dbm_pagfno(db);
+    int pag = dbm_dirfno(db);
     lockf(pag, F_LOCK, 0);
     datum dv = dbm_fetch(db, dk);
     lockf(pag, F_ULOCK, 0);
@@ -39,7 +39,7 @@ int db_get_many(DBM *db, char *pattern, char ***keys, char ***results) {
     int i = 0;
     *keys = malloc(1);
     *results = malloc(1);
-    int pag = dbm_pagfno(db);
+    int pag = dbm_dirfno(db);
     lockf(pag, F_LOCK, 0);
     for(dk = dbm_firstkey(db); dk.dptr != NULL; dk = dbm_nextkey(db)) {
         datum dv = dbm_fetch(db, dk);
@@ -61,7 +61,7 @@ int db_remove(DBM *db, char *key) {
     datum dk;
     dk.dptr = key;
     dk.dsize = strlen(key) + 1;
-    int pag = dbm_pagfno(db);
+    int pag = dbm_dirfno(db);
     lockf(pag, F_LOCK, 0);
     int result = dbm_delete(db, dk);
     lockf(pag, F_ULOCK, 0);
