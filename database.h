@@ -12,6 +12,11 @@
 #include <db.h>
 #endif
 
+struct flock *__file_lock(short, short);
+void __rlock(int);
+void __wlock(int);
+void __ulock(int);
+
 DBM *db_open_or_create(char*);
 void db_close(DBM*);
 int db_set(DBM*, char*, char*);
