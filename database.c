@@ -62,9 +62,9 @@ int db_remove(DBM *db, char *key) {
     dk.dptr = key;
     dk.dsize = strlen(key) + 1;
     int pag = dbm_dirfno(db);
-    lockf(pag, F_LOCK, 0);
+    __wlock(pag);
     int result = dbm_delete(db, dk);
-    lockf(pag, F_ULOCK, 0);
+    __ulock(pag);
     return result;
 }
 

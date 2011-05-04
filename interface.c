@@ -321,7 +321,11 @@ void __bottom_left_loop(int query_type, char *query) {
             getyx(pad, y, x);
             switch(opt) {
                 case 13:
-                    __bottom_right_loop(form, field, keys[0]);
+                    __bottom_right_loop(form, field, keys[highlight]);
+                    __bottom_left_free_results(query_type,
+                            r_size, keys, results);
+                    r_size = __bottom_left_update_results(query_type,
+                            query, &keys, &results);
                     break;
                 case KEY_UP:
                     if(y > 0) {
@@ -466,9 +470,11 @@ void __bottom_right_loop(FORM *form, FIELD *field[6], char *key) {
                 break;
             case KEY_UP:
                 form_driver(form, REQ_PREV_FIELD);
+                form_driver(form, REQ_END_LINE);
                 break;
             case KEY_DOWN:
                 form_driver(form, REQ_NEXT_FIELD);
+                form_driver(form, REQ_END_LINE);
                 break;
             case KEY_LEFT:
                 form_driver(form, REQ_PREV_CHAR);
