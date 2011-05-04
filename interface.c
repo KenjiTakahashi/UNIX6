@@ -163,6 +163,7 @@ void __top_right_add_loop(FORM *form, FIELD *field[6]) {
                 }
                 wrefresh(status);
                 form_driver(form, REQ_FIRST_FIELD);
+                free(res);
                 free(res0);
                 free(res1);
                 free(res2);
@@ -470,6 +471,12 @@ void __bottom_right_loop(FORM *form, FIELD *field[6], char *key) {
                     wprintw(status, "FAILED");
                 }
                 wrefresh(status);
+                free(res);
+                free(res0);
+                free(res1);
+                free(res2);
+                free(res3);
+                free(res4);
                 break;
             case KEY_UP:
                 form_driver(form, REQ_PREV_FIELD);
