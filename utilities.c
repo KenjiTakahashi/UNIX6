@@ -67,6 +67,7 @@ char **__util_explode(char* orig) {
             result[i][0] = '\0';
         }
     }
+    free(string);
     return result;
 }
 
