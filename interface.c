@@ -326,6 +326,7 @@ void __bottom_left_loop(int query_type, char *query) {
                             r_size, keys, results);
                     r_size = __bottom_left_update_results(query_type,
                             query, &keys, &results);
+                    __bottom_left_print(pad, keys, r_size, highlight);
                     break;
                 case KEY_UP:
                     if(y > 0) {
@@ -360,6 +361,7 @@ void __bottom_left_loop(int query_type, char *query) {
                                 r_size, keys, results);
                         r_size = __bottom_left_update_results(query_type,
                                 query, &keys, &results);
+                        __bottom_left_print(pad, keys, r_size, highlight);
                     } else {
                         wprintw(status, "FAILED");
                     }
@@ -381,6 +383,7 @@ void __bottom_left_loop(int query_type, char *query) {
 }
 
 void __bottom_left_print(WINDOW *pad, char **keys, int size, int highlight) {
+    wclear(pad);
     int i;
     for(i = 0; i < size; ++i) {
         if(i == highlight) {
