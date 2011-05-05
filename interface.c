@@ -300,14 +300,14 @@ void __bottom_left_loop(int query_type, char *query) {
     char **keys;
     char **results;
     int r_size = __bottom_left_update_results(query_type, query, &keys, &results);
-    if(query_type == 0) {
-        wattron(pad, A_REVERSE);
-        mvwprintw(pad, 0, 0, keys[0]);
-        wattroff(pad, A_REVERSE);
-    } else {
-        __bottom_left_print(pad, keys, r_size, highlight);
-    }
     if(r_size != 0) {
+        if(query_type == 0) {
+            wattron(pad, A_REVERSE);
+            mvwprintw(pad, 0, 0, keys[0]);
+            wattroff(pad, A_REVERSE);
+        } else {
+            __bottom_left_print(pad, keys, r_size, highlight);
+        }
         wprintw(status, "FOUND %d RESULT(S)", r_size);
         wrefresh(status);
         FIELD *field[6];
@@ -378,6 +378,7 @@ void __bottom_left_loop(int query_type, char *query) {
         __util_free_exploded(data);
     } else {
         wprintw(status, "NO RESULTS FOUND");
+        free(results);
     }
     wrefresh(status);
     delwin(pad);
