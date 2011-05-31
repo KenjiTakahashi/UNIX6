@@ -1,5 +1,5 @@
-pod Linuksem: make linux
-pod BSD/Solaris: make bsd
+autoreconf --install or sth like that
+then ./configure && make
 program do masowego dodawania rekordow:
 make mass_linux || make mass_bsd
 format: nazwa;forma;ocena;data;wykladowca
