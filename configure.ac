@@ -20,11 +20,10 @@ AC_SEARCH_LIBS([__db_ndbm_open], [db])
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h curses.h form.h sys/types.h regex.h],
                  [], [AC_MSG_ERROR(essential header not found!)])
-AC_CHECK_HEADERS([ndbm.h], [], [
-                  #ifndef HAVE_NDBM_H
-                  AC_CHECK_HEADERS([db.h], [], [AC_MSG_ERROR(standard db header not found!)])
-                  #endif
-                  ])
+AC_CHECK_HEADERS([ndbm.h])
+#ifndef HAVE_NDBM_H
+AC_CHECK_HEADERS([db.h], [], [AC_MSG_ERROR(no standard db header found!)])
+#endif
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
