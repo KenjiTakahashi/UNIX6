@@ -1,0 +1,5 @@
+pod Linuksem: make linux
+pod BSD/Solaris: make bsd
+program do masowego dodawania rekordow:
+make mass_linux || make mass_bsd
+format: nazwa;forma;ocena;data;wykladowca

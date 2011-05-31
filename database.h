@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <regex.h>
-#ifndef __linux__
+#ifdef HAVE_NDBM_H
 #include <ndbm.h>
 #else
 #define DB_DBM_HSEARCH 1
