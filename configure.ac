@@ -19,7 +19,7 @@ AC_SEARCH_LIBS([form_driver], [form], [], [AC_MSG_ERROR(form addon for curses no
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h curses.h form.h sys/types.h regex.h],
                  [], [AC_MSG_ERROR(essential header not found!)])
-AC_CHECK_HEADERS([ndbm.h], [AC_DEFINE([HAVE_NDBM_H])], [AC_MSG_ERROR(no standard db header found!)])
+AC_CHECK_HEADERS([ndbm.h], [], [AC_MSG_ERROR(no standard db header found!)])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
